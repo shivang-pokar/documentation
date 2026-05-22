@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Workflow Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --surface2: #161c2e;
+    --border: #1e2740;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ─────────────────────────────── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,13,20,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  nav a {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+
+  nav a:hover { color: var(--text); background: var(--surface); }
+
+  /* ── HERO ───────────────────────────────── */
+  .hero {
+    padding: 80px 2rem 60px;
+    max-width: 960px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent2);
+    background: rgba(6,182,212,0.08);
+    border: 1px solid rgba(6,182,212,0.2);
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-label::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent2);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 520px;
+    font-weight: 400;
+  }
+
+  /* ── BRANCH VIZ ──────────────────────────── */
+  .branch-viz {
+    margin: 48px auto;
+    max-width: 960px;
+    padding: 0 2rem;
+  }
+
+  .branch-diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 32px;
+    overflow-x: auto;
+  }
+
+  .branch-line {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+  }
+
+  .branch-line:last-child { margin-bottom: 0; }
+
+  .b-label {
+    width: 120px;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  .b-prod { color: var(--red); }
+  .b-dev { color: var(--amber); }
+  .b-feat { color: var(--green); }
+  .b-hot { color: #f472b6; }
+
+  .b-track {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+  }
+
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid currentColor;
+  }
+
+  .dot.filled { background: currentColor; }
+
+  .line {
+    height: 2px;
+    background: currentColor;
+    flex: 1;
+    opacity: 0.4;
+  }
+
+  .arrow-line {
+    height: 2px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+
+  .b-note {
+    margin-left: 16px;
+    color: var(--muted);
+    font-size: 0.72rem;
+    flex-shrink: 0;
+  }
+
+  /* ── LAYOUT ──────────────────────────────── */
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 2rem 80px;
+  }
+
+  /* ── SECTIONS ────────────────────────────── */
+  .section {
+    margin-bottom: 64px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+  }
+
+  .section.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  h3::before {
+    content: '';
+    width: 3px; height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  p {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+
+  /* ── BRANCH CARDS ────────────────────────── */
+  .branch-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .branch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .branch-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .branch-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .branch-card.prod::before { background: var(--red); }
+  .branch-card.dev::before { background: var(--amber); }
+  .branch-card.feat::before { background: var(--green); }
+  .branch-card.hot::before { background: #f472b6; }
+
+  .branch-card:hover { border-color: #2e3a5c; }
+
+  .card-branch {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .branch-card.prod .card-branch { color: var(--red); }
+  .branch-card.dev .card-branch { color: var(--amber); }
+  .branch-card.feat .card-branch { color: var(--green); }
+  .branch-card.hot .card-branch { color: #f472b6; }
+
+  .card-desc { font-size: 0.8rem; color: var(--muted); margin: 0; }
+  .card-who { font-size: 0.72rem; color: var(--muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .card-who span { color: var(--text); font-weight: 600; }
+
+  /* ── CODE BLOCKS ─────────────────────────── */
+  .code-wrap {
+    position: relative;
+    margin: 16px 0;
+  }
+
+  .code-label {
+    position: absolute;
+    top: -1px; right: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-top: none;
+    padding: 2px 8px 3px;
+    border-radius: 0 0 6px 6px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.7;
+  }
+
+  .cm { color: var(--muted); }
+  .ck { color: var(--accent2); }
+  .cv { color: #a78bfa; }
+  .cs { color: var(--green); }
+  .cf { color: var(--accent); }
+  .ch { color: var(--amber); }
+
+  .copy-btn {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  /* ── CALLOUTS ────────────────────────────── */
+  .callout {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    border: 1px solid;
+  }
+
+  .callout.info { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.2); }
+  .callout.success { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+  .callout.warn { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+  .callout.danger { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.2); }
+
+  .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; }
+  .callout-title { font-size: 0.82rem; font-weight: 700; margin-bottom: 3px; }
+  .callout.info .callout-title { color: var(--accent); }
+  .callout.success .callout-title { color: var(--green); }
+  .callout.warn .callout-title { color: var(--amber); }
+  .callout.danger .callout-title { color: var(--red); }
+  .callout-text { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+  /* ── STEPS ───────────────────────────────── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+
+  .step {
+    display: flex;
+    gap: 20px;
+    position: relative;
+  }
+
+  .step-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .step-num {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .step-connector {
+    width: 2px;
+    flex: 1;
+    background: var(--border);
+    margin: 6px 0;
+    min-height: 20px;
+  }
+
+  .step:last-child .step-connector { display: none; }
+
+  .step-body {
+    padding-bottom: 28px;
+    flex: 1;
+  }
+
+  .step-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  /* ── TABLE ───────────────────────────────── */
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 16px 0;
+  }
+
+  .ref-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ref-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .ref-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .ref-table tr:last-child td { border-bottom: none; }
+
+  .ref-table .mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text);
+  }
+
+  /* ── SCENARIO CARDS ──────────────────────── */
+  .scenarios { display: flex; flex-direction: column; gap: 16px; }
+
+  .scenario {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .scenario-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+
+  .scenario-header:hover { background: var(--surface2); }
+
+  .scenario-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .badge-a { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .badge-b { background: rgba(6,182,212,0.15); color: var(--accent2); }
+  .badge-c { background: rgba(16,185,129,0.15); color: var(--green); }
+
+  .scenario-title { font-size: 0.9rem; font-weight: 600; flex: 1; }
+  .scenario-toggle { color: var(--muted); font-size: 1rem; transition: transform 0.2s; }
+  .scenario.open .scenario-toggle { transform: rotate(180deg); }
+
+  .scenario-body {
+    display: none;
+    padding: 0 20px 20px;
+  }
+
+  .scenario.open .scenario-body { display: block; }
+
+  /* ── COMMIT TABLE ────────────────────────── */
+  .commit-table { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+
+  .commit-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .commit-prefix {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .prefix-feat { background: rgba(16,185,129,0.15); color: var(--green); }
+  .prefix-fix { background: rgba(239,68,68,0.15); color: var(--red); }
+  .prefix-wip { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .prefix-ref { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .prefix-chore { background: rgba(100,116,139,0.15); color: var(--muted); }
+  .prefix-docs { background: rgba(6,182,212,0.15); color: var(--accent2); }
+
+  .commit-info { flex: 1; }
+  .commit-when { font-size: 0.8rem; font-weight: 600; margin-bottom: 2px; }
+  .commit-eg { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--muted); }
+
+  /* ── CHEATSHEET ──────────────────────────── */
+  .cheat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .cheat-grid { grid-template-columns: 1fr; }
+    nav { display: none; }
+    h1 { font-size: 2rem; }
+  }
+
+  .cheat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .cheat-card-head {
+    background: var(--surface2);
+    padding: 10px 16px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .cheat-card pre {
+    border: none;
+    border-radius: 0;
+    margin: 0;
+    padding: 16px;
+    background: transparent;
+    font-size: 0.75rem;
+  }
+
+  /* ── FOOTER ──────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 2rem;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── SCROLL INDICATOR ────────────────────── */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 999;
+    transition: width 0.1s;
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⎇</div>
+    Git Workflow
+  </div>
+  <nav>
+    <a href="#branches">Branches</a>
+    <a href="#daily">Daily Flow</a>
+    <a href="#parallel">Parallel Work</a>
+    <a href="#rebase">Rebase</a>
+    <a href="#commits">Commits</a>
+    <a href="#cheatsheet">Cheatsheet</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-label">v1.0 · Internal Dev Team</div>
+  <h1>Git Workflow<br><span>Guide</span></h1>
+  <p class="hero-sub">Branch structure, daily dev flow, parallel work, and rebase — everything your team needs to ship without stepping on each other.</p>
+</div>
+
+<!-- BRANCH VIZ -->
+<div class="branch-viz">
+  <div class="branch-diagram">
+    <div class="branch-line">
+      <span class="b-label b-prod">prod</span>
+      <div class="b-track" style="color: #ef4444">
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div>
+      </div>
+      <span class="b-note">← TL only · protected</span>
+    </div>
+    <div class="branch-line">
+      <span class="b-label b-dev">dev</span>
+      <div class="b-track" style="color: #f59e0b">
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot"></div><div class="line"></div>
+        <div class="dot"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot"></div><div class="line"></div>
+        <div class="dot filled"></div>
+      </div>
+      <span class="b-note">← all devs via PR</span>
+    </div>
+    <div class="branch-line">
+      <span class="b-label b-feat">feature/*</span>
+      <div class="b-track" style="color: #10b981">
+        <div class="dot" style="opacity:0.2"></div><div class="line" style="opacity:0.1"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line" style="opacity:0.1"></div>
+        <div class="dot" style="opacity:0.2"></div>
+      </div>
+      <span class="b-note">← your daily workspace</span>
+    </div>
+    <div class="branch-line">
+      <span class="b-label b-hot">hotfix/*</span>
+      <div class="b-track" style="color: #f472b6">
+        <div class="dot" style="opacity:0.2"></div><div class="line" style="opacity:0.1"></div>
+        <div class="dot" style="opacity:0.2"></div><div class="line" style="opacity:0.1"></div>
+        <div class="dot" style="opacity:0.2"></div><div class="line" style="opacity:0.1"></div>
+        <div class="dot filled"></div><div class="line"></div>
+        <div class="dot filled"></div><div class="line" style="opacity:0.1"></div>
+        <div class="dot" style="opacity:0.2"></div>
+      </div>
+      <span class="b-note">← urgent prod fix · TL</span>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- SECTION 1: BRANCHES -->
+  <div class="section" id="branches">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>Branch Structure</h2>
+    </div>
+
+    <div class="branch-cards">
+      <div class="branch-card prod">
+        <div class="card-branch">prod</div>
+        <p class="card-desc">Live production code. Only stable, fully tested features land here.</p>
+        <div class="card-who">Managed by <span>TL only</span> · Direct push blocked</div>
+      </div>
+      <div class="branch-card dev">
+        <div class="card-branch">dev</div>
+        <p class="card-desc">Integration branch. All completed features merge here first.</p>
+        <div class="card-who">All devs via <span>Pull Request</span></div>
+      </div>
+      <div class="branch-card feat">
+        <div class="card-branch">feature/*</div>
+        <p class="card-desc">Your personal workspace. Work here for days freely — push anytime.</p>
+        <div class="card-who">Individual dev <span>· push freely</span></div>
+      </div>
+      <div class="branch-card hot">
+        <div class="card-branch">hotfix/*</div>
+        <p class="card-desc">Urgent prod fixes. Branches off prod, merges into prod AND dev.</p>
+        <div class="card-who">TL only <span>· fast-track</span></div>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">The Core Rule</div>
+        <p class="callout-text">Never work directly on dev or prod. Every change — even a one-liner — gets its own branch. feature/* is your safe zone. Push every day.</p>
+      </div>
+    </div>
+
+    <h3>Branch Naming</h3>
+    <table class="ref-table">
+      <thead><tr><th>Branch</th><th>Pattern</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Feature</td><td class="mono">feature/short-desc</td><td class="mono">feature/esign-recipients</td></tr>
+        <tr><td>Bug on dev</td><td class="mono">fix/short-desc</td><td class="mono">fix/pdf-preview-crash</td></tr>
+        <tr><td>Urgent prod fix</td><td class="mono">hotfix/short-desc</td><td class="mono">hotfix/login-broken</td></tr>
+        <tr><td>Release prep</td><td class="mono">release/version</td><td class="mono">release/v1.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 2: DAILY FLOW -->
+  <div class="section" id="daily">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Developer Daily Flow</h2>
+    </div>
+
+    <p>Follow these steps every time you start a new feature or task. Features can take days — that is expected.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">1</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Create Your Feature Branch</div>
+          <p>Always branch off dev. Pull latest first.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="ck">git</span> <span class="cs">checkout</span> dev
+<span class="ck">git</span> <span class="cs">pull</span> origin dev
+<span class="ck">git</span> <span class="cs">checkout</span> -b feature/your-feature-name</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">2</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Work and Push Every Day</div>
+          <p>Push to your feature branch daily. Half-done work is fine here.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="ck">git</span> <span class="cs">add</span> .
+<span class="ck">git</span> <span class="cs">commit</span> -m <span class="cv">"wip: recipient comparison logic"</span>
+<span class="ck">git</span> <span class="cs">push</span> origin feature/your-feature-name</pre>
+          </div>
+          <div class="callout success" style="margin-top:12px">
+            <div class="callout-icon">✅</div>
+            <div class="callout-body">
+              <p class="callout-text">Pushing to feature/* does NOT affect dev or prod. You are safe to push unfinished work here every day.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">3</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Sync With Dev Daily</div>
+          <p>If other devs merged into dev while you are working, rebase to avoid big conflicts at the end.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="ck">git</span> <span class="cs">fetch</span> origin
+<span class="ck">git</span> <span class="cs">rebase</span> origin/dev
+<span class="cm"># fix any conflicts, then:</span>
+<span class="ck">git</span> <span class="cs">push</span> --force-with-lease origin feature/your-feature-name</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">4</div>
+          <div class="step-connector"></div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">Raise PR When Feature Is Done</div>
+          <p>When complete and tested, open a Pull Request on GitHub into dev.</p>
+          <div class="callout info">
+            <div class="callout-icon">📋</div>
+            <div class="callout-body">
+              <div class="callout-title">PR Checklist</div>
+              <p class="callout-text">Base: dev &nbsp;·&nbsp; Compare: feature/your-name &nbsp;·&nbsp; Squash wip commits &nbsp;·&nbsp; Add screenshots if UI &nbsp;·&nbsp; Request review</p>
+            </div>
+          </div>
+          <div class="callout warn" style="margin-top:8px">
+            <div class="callout-icon">⚠️</div>
+            <div class="callout-body">
+              <p class="callout-text">Never merge your own PR without at least one review.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-left">
+          <div class="step-num">5</div>
+        </div>
+        <div class="step-body">
+          <div class="step-title">TL Merges dev → prod</div>
+          <p>When dev is stable, TL raises a PR from dev to prod and releases.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: PARALLEL WORK -->
+  <div class="section" id="parallel">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>Working in Parallel</h2>
+    </div>
+
+    <p>Sometimes a hotfix or urgent task interrupts your current feature work. Here are the three scenarios and how to handle each.</p>
+
+    <div class="scenarios">
+      <div class="scenario open">
+        <div class="scenario-header" onclick="toggleScenario(this)">
+          <span class="scenario-badge badge-a">Scenario A</span>
+          <div class="scenario-title">Urgent fix needed — feature already pushed</div>
+          <span class="scenario-toggle">▼</span>
+        </div>
+        <div class="scenario-body">
+          <p>Your code is already pushed to your feature branch. Just switch branches — nothing to stash.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="cm"># Your feature is pushed — safe to switch</span>
+<span class="ck">git</span> <span class="cs">checkout</span> prod
+<span class="ck">git</span> <span class="cs">checkout</span> -b hotfix/urgent-fix
+
+<span class="cm"># fix the issue, push, raise PR</span>
+<span class="ck">git</span> <span class="cs">commit</span> -m <span class="cv">"fix: invoice calculation error"</span>
+<span class="ck">git</span> <span class="cs">push</span> origin hotfix/urgent-fix
+
+<span class="cm"># come back to your feature — everything exactly as you left it</span>
+<span class="ck">git</span> <span class="cs">checkout</span> feature/your-feature-name</pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-header" onclick="toggleScenario(this)">
+          <span class="scenario-badge badge-b">Scenario B</span>
+          <div class="scenario-title">Work not pushed yet — use stash</div>
+          <span class="scenario-toggle">▼</span>
+        </div>
+        <div class="scenario-body">
+          <p>If you have uncommitted local changes and need to switch urgently, stash them temporarily.</p>
+          <div class="code-wrap">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="ck">git</span> <span class="cs">stash</span> push -m <span class="cv">"wip: halfway through recipient logic"</span>
+<span class="ck">git</span> <span class="cs">checkout</span> dev
+<span class="ck">git</span> <span class="cs">checkout</span> -b feature/urgent-small-thing
+
+<span class="cm"># do the urgent work...</span>
+
+<span class="cm"># come back and restore</span>
+<span class="ck">git</span> <span class="cs">checkout</span> feature/your-feature-name
+<span class="ck">git</span> <span class="cs">stash</span> pop</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: REBASE -->
+  <div class="section" id="rebase">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Rebase</h2>
+    </div>
+
+    <p>Rebase keeps history clean and linear. Preferred over merge for feature branches.</p>
+
+    <h3>Basic Rebase — Sync With dev</h3>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="ck">git</span> <span class="cs">checkout</span> feature/your-feature-name
+<span class="ck">git</span> <span class="cs">rebase</span> origin/dev
+
+<span class="cm"># if conflicts appear:</span>
+<span class="cm"># 1. fix the conflict in the file</span>
+<span class="ck">git</span> <span class="cs">add</span> .
+<span class="ck">git</span> <span class="cs">rebase</span> --continue
+
+<span class="cm"># or cancel entirely</span>
+<span class="ck">git</span> <span class="cs">rebase</span> --abort
+
+<span class="cm"># push after rebase (force needed — history changed)</span>
+<span class="ck">git</span> <span class="cs">push</span> --force-with-lease origin feature/your-feature-name</pre>
+    </div>
+
+    <h3>Interactive Rebase — Clean Up wip Commits</h3>
+    <p>Before raising a PR, squash all your daily wip commits into one clean commit.</p>
+    <div class="code-wrap">
+      <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      <pre><span class="ck">git</span> <span class="cs">rebase</span> -i origin/dev
+
+<span class="cm"># Editor opens. Change 'pick' to 'squash' for wip commits:</span>
+<span class="ch">pick</span>   abc1234  feat: start recipient logic
+<span class="ch">squash</span> def5678  wip: halfway done
+<span class="ch">squash</span> ghi9012  wip: almost there
+<span class="ch">squash</span> jkl3456  wip: done
+
+<span class="cm"># Result: one clean commit instead of four messy ones</span></pre>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-icon">🔑</div>
+      <div class="callout-body">
+        <div class="callout-title">Golden Rule of Rebase</div>
+        <p class="callout-text">Never rebase a branch others are also working on. Since each dev owns their own feature/* branch, you are always safe to rebase it. After rebase, always use <code style="font-family:JetBrains Mono,monospace;font-size:0.85em">--force-with-lease</code> not <code style="font-family:JetBrains Mono,monospace;font-size:0.85em">--force</code>.</p>
+      </div>
+    </div>
+
+    <h3>Merge vs Rebase</h3>
+    <table class="ref-table">
+      <thead><tr><th></th><th>Merge</th><th>Rebase</th></tr></thead>
+      <tbody>
+        <tr><td>History</td><td>Adds merge commit — messy</td><td>Linear — clean</td></tr>
+        <tr><td>Conflicts</td><td>Resolved once at merge</td><td>Resolved per commit</td></tr>
+        <tr><td>Shared branches</td><td>Safe to use</td><td>Never on shared branches</td></tr>
+        <tr><td>Feature branches</td><td>Works but noisy</td><td>Preferred ✓</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 5: COMMITS -->
+  <div class="section" id="commits">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>Commit Message Convention</h2>
+    </div>
+
+    <p>Consistent commit messages make history readable for everyone.</p>
+
+    <div class="commit-table">
+      <div class="commit-row">
+        <div class="commit-prefix prefix-feat">feat:</div>
+        <div class="commit-info">
+          <div class="commit-when">New feature or functionality</div>
+          <div class="commit-eg">feat: add recipient comparison logic</div>
+        </div>
+      </div>
+      <div class="commit-row">
+        <div class="commit-prefix prefix-fix">fix:</div>
+        <div class="commit-info">
+          <div class="commit-when">Bug fix</div>
+          <div class="commit-eg">fix: pdf preview not loading on mobile</div>
+        </div>
+      </div>
+      <div class="commit-row">
+        <div class="commit-prefix prefix-wip">wip:</div>
+        <div class="commit-info">
+          <div class="commit-when">Daily push on feature branch — work in progress</div>
+          <div class="commit-eg">wip: halfway through esign flow</div>
+        </div>
+      </div>
+      <div class="commit-row">
+        <div class="commit-prefix prefix-ref">refactor:</div>
+        <div class="commit-info">
+          <div class="commit-when">Code cleanup, no behavior change</div>
+          <div class="commit-eg">refactor: simplify deepClone logic</div>
+        </div>
+      </div>
+      <div class="commit-row">
+        <div class="commit-prefix prefix-chore">chore:</div>
+        <div class="commit-info">
+          <div class="commit-when">Config, deps, non-code changes</div>
+          <div class="commit-eg">chore: update angular to v17</div>
+        </div>
+      </div>
+      <div class="commit-row">
+        <div class="commit-prefix prefix-docs">docs:</div>
+        <div class="commit-info">
+          <div class="commit-when">Documentation only</div>
+          <div class="commit-eg">docs: update readme with setup steps</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">
+        <div class="callout-title">Before Merging</div>
+        <p class="callout-text">Squash all wip: commits into one clean feat: or fix: commit using interactive rebase before your PR merges into dev.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: CHEATSHEET -->
+  <div class="section" id="cheatsheet">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2>Quick Reference</h2>
+    </div>
+
+    <table class="ref-table" style="margin-bottom:28px">
+      <thead><tr><th>Situation</th><th>Branch From</th><th>Merge Into</th></tr></thead>
+      <tbody>
+        <tr><td>New feature</td><td class="mono" style="color:#f59e0b">dev</td><td class="mono">dev via PR</td></tr>
+        <tr><td>Urgent prod bug</td><td class="mono" style="color:#ef4444">prod</td><td class="mono">prod + dev via PR</td></tr>
+        <tr><td>Urgent small feature</td><td class="mono" style="color:#f59e0b">dev</td><td class="mono">dev (fast-track)</td></tr>
+        <tr><td>Experimental / risky</td><td class="mono" style="color:#f59e0b">dev</td><td class="mono">dev only when stable</td></tr>
+      </tbody>
+    </table>
+
+    <div class="cheat-grid">
+      <div class="cheat-card">
+        <div class="cheat-card-head">Start a feature</div>
+        <pre><span class="ck">git</span> checkout dev
+<span class="ck">git</span> pull origin dev
+<span class="ck">git</span> checkout -b feature/name</pre>
+      </div>
+      <div class="cheat-card">
+        <div class="cheat-card-head">End of each day</div>
+        <pre><span class="ck">git</span> add .
+<span class="ck">git</span> commit -m <span class="cv">"wip: ..."</span>
+<span class="ck">git</span> push origin feature/name</pre>
+      </div>
+      <div class="cheat-card">
+        <div class="cheat-card-head">Sync with dev</div>
+        <pre><span class="ck">git</span> fetch origin
+<span class="ck">git</span> rebase origin/dev
+<span class="ck">git</span> push --force-with-lease</pre>
+      </div>
+      <div class="cheat-card">
+        <div class="cheat-card-head">Clean up before PR</div>
+        <pre><span class="ck">git</span> rebase -i origin/dev
+<span class="cm"># squash wip commits</span>
+<span class="cm"># raise PR: feature → dev</span></pre>
+      </div>
+    </div>
+
+    <div class="callout success" style="margin-top:24px">
+      <div class="callout-icon">🚀</div>
+      <div class="callout-body">
+        <div class="callout-title">Remember</div>
+        <p class="callout-text">Your feature branch is yours. Push every day. Never push directly to dev or prod. Raise a PR only when the feature is complete and tested.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Git Workflow Guide · v1.0 · Internal Dev Team · Confidential
+</footer>
+
+<script>
+  // scroll progress
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    document.getElementById('progress').style.width = pct + '%';
+  });
+
+  // section reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.section').forEach(s => observer.observe(s));
+
+  // copy buttons
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  // scenario toggles
+  function toggleScenario(header) {
+    const sc = header.parentElement;
+    sc.classList.toggle('open');
+  }
+
+  // nav smooth scroll
+  document.querySelectorAll('nav a').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+</script>
+</body>
+</html>

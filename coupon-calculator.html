@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CouponCalc — Discount Stack Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --glass: rgba(255,255,255,0.03);
+    --glass-border: rgba(255,255,255,0.09);
+    --muted: #555555;
+    --muted2: #888888;
+    --subtle: #1c1c1c;
+    --red: #ff4444;
+    --text: #f5f5f5;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --radius: 14px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.022;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+    width: 80vw; height: 60vh;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.04) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container { max-width: 1060px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  header { padding: 30px 0 0; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.5px; color: #fff; display: flex; align-items: center; gap: 9px; }
+  .logo-dot { width: 7px; height: 7px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(255,255,255,0.8); animation: blink 3s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .header-badge { font-size: 0.67rem; font-family: var(--font-mono); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--muted2); padding: 4px 10px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .hero { text-align: center; padding: 68px 0 52px; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted2); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 6px 16px; border-radius: 100px; margin-bottom: 26px; animation: fadeUp 0.6s ease both; }
+  .hero-tag span { width: 5px; height: 5px; background: #fff; border-radius: 50%; display: inline-block; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.7)} }
+
+  h1 { font-size: clamp(2.2rem, 5.5vw, 4rem); font-weight: 800; line-height: 1.05; letter-spacing: -2px; color: #fff; animation: fadeUp 0.6s ease 0.1s both; }
+  h1 em { font-style: normal; color: var(--muted2); }
+  .hero-sub { margin-top: 18px; color: var(--muted); font-size: 1rem; max-width: 500px; margin-inline: auto; line-height: 1.65; font-weight: 400; animation: fadeUp 0.6s ease 0.2s both; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); transition: border-color 0.25s; }
+  .card:hover { border-color: rgba(255,255,255,0.14); }
+
+  .calc-wrapper { animation: fadeUp 0.6s ease 0.3s both; margin-bottom: 52px; }
+  .calc-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }
+
+  .panel-inputs { padding: 36px 38px; border-right: 1px solid var(--glass-border); }
+  @media (max-width: 720px) { .panel-inputs { border-right: none; border-bottom: 1px solid var(--glass-border); padding: 26px 22px; } }
+
+  .panel-title { font-size: 0.65rem; letter-spacing: 2.5px; text-transform: uppercase; font-family: var(--font-mono); color: var(--muted); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+  .panel-title::before { content: ''; width: 18px; height: 1px; background: var(--muted); }
+
+  .field { margin-bottom: 26px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
+  label { font-size: 0.7rem; font-weight: 700; color: var(--muted2); letter-spacing: 0.8px; text-transform: uppercase; }
+  .live-badge { font-family: var(--font-mono); font-size: 0.7rem; color: #fff; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); padding: 2px 8px; border-radius: 5px; transition: all 0.25s; }
+
+  .input-wrap { position: relative; }
+  .input-prefix { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); color: var(--muted); font-size: 0.85rem; pointer-events: none; }
+  .input-suffix { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); color: var(--muted); font-size: 0.85rem; pointer-events: none; }
+
+  input[type="number"] { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 13px 40px 13px 38px; color: #fff; font-family: var(--font-mono); font-size: 0.98rem; font-weight: 600; outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus { border-color: rgba(255,255,255,0.35); box-shadow: 0 0 0 3px rgba(255,255,255,0.05); background: rgba(255,255,255,0.04); }
+  input[type="number"]::placeholder { color: var(--muted); font-weight: 400; }
+
+  .slider-wrap { margin-top: 9px; }
+  input[type="range"] { -webkit-appearance: none; width: 100%; height: 3px; background: var(--subtle); border-radius: 100px; outline: none; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.5); transition: transform 0.15s; cursor: grab; }
+  input[type="range"]::-webkit-slider-thumb:active { transform: scale(1.2); cursor: grabbing; }
+  input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #fff; border: none; }
+
+  .panel-results { padding: 36px 38px; }
+  @media (max-width: 720px) { .panel-results { padding: 26px 22px; } }
+
+  .result-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.04); gap: 12px; }
+  .result-row:first-child { padding-top: 0; }
+  .result-row:last-of-type { border-bottom: none; }
+  .result-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; line-height: 1.4; flex-shrink: 0; }
+  .result-sub { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .result-value { font-family: var(--font-mono); font-size: 1rem; font-weight: 600; text-align: right; color: var(--muted2); transition: all 0.25s; }
+  .result-value.bright { color: #fff; }
+  .result-value.big { font-size: 1.5rem; font-weight: 800; color: #fff; letter-spacing: -1px; }
+
+  .divider { height: 1px; background: rgba(255,255,255,0.05); margin: 22px 0; }
+  .progress-wrap { margin-bottom: 13px; }
+  .progress-wrap:last-child { margin-bottom: 0; }
+  .progress-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .progress-bar-track { width: 100%; height: 3px; background: var(--subtle); border-radius: 100px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 100px; transition: width 0.7s cubic-bezier(0.16,1,0.3,1); }
+  .pb-existing { background: rgba(255,255,255,0.3); }
+  .pb-coupon   { background: rgba(255,255,255,0.6); }
+  .pb-total    { background: #fff; }
+
+  .copy-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 20px; padding: 12px 24px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; color: var(--muted2); font-family: var(--font-display); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); color: #fff; transform: translateY(-1px); }
+  .copy-btn:active { transform: translateY(0); }
+  .copy-btn.copied { color: #fff; background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.25); }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 860px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 440px) { .summary-grid { grid-template-columns: 1fr; } }
+
+  .summary-card { padding: 22px 20px; transition: transform 0.2s, border-color 0.2s; }
+  .summary-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.16); }
+  .summary-card-icon { font-size: 1.15rem; margin-bottom: 10px; display: block; opacity: 0.5; }
+  .summary-card-label { font-size: 0.63rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); font-weight: 700; margin-bottom: 7px; }
+  .summary-card-value { font-family: var(--font-mono); font-size: 1.25rem; font-weight: 700; color: var(--muted2); transition: all 0.35s; min-height: 1.7rem; }
+  .summary-card.bright .summary-card-value { color: #fff; }
+
+  .section { margin-bottom: 52px; }
+  .section-header { text-align: center; margin-bottom: 30px; }
+  .section-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .section-title { font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 800; letter-spacing: -1px; color: #fff; }
+
+  .table-wrap { overflow-x: auto; border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.8rem; }
+  thead tr { background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.07); }
+  th { padding: 13px 16px; text-align: left; font-size: 0.63rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; white-space: nowrap; }
+  td { padding: 13px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); white-space: nowrap; color: var(--muted2); }
+  tbody tr { transition: background 0.15s; cursor: pointer; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody tr:hover td { color: #fff; }
+  tbody tr:last-child td { border-bottom: none; }
+  .td-hi { color: rgba(255,255,255,0.8); font-weight: 600; }
+  .td-bright { color: #fff; font-weight: 700; }
+
+  footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 28px 0; margin-top: 40px; text-align: center; color: var(--muted); font-size: 0.78rem; }
+  footer strong { color: var(--muted2); }
+  footer .footer-links { display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+  footer .footer-links a { color: var(--muted); text-decoration: none; transition: color 0.2s; font-size: 0.75rem; }
+  footer .footer-links a:hover { color: #fff; }
+
+  .field-error { font-size: 0.68rem; color: var(--red); margin-top: 6px; font-family: var(--font-mono); display: none; }
+  input.invalid { border-color: rgba(255,68,68,0.5) !important; box-shadow: 0 0 0 3px rgba(255,68,68,0.08) !important; }
+
+  @keyframes countUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .counting { animation: countUp 0.25s ease; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--subtle); border-radius: 100px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo"><span class="logo-dot"></span>CouponCalc</div>
+    <span class="header-badge">Free Tool</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-tag"><span></span>Smart Discount Stacking</div>
+    <h1>Find the <em>Exact</em> Coupon<br>Percentage You Need</h1>
+    <p class="hero-sub">Enter your original price, existing discount, and target — get the precise coupon code instantly.</p>
+  </section>
+
+  <!-- CALCULATOR -->
+  <div class="calc-wrapper">
+    <div class="card">
+      <div class="calc-grid">
+
+        <div class="panel-inputs">
+          <div class="panel-title">Inputs</div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="originalPrice">Original Price</label>
+              <span class="live-badge" id="badge-price">₹0</span>
+            </div>
+            <div class="input-wrap">
+              <span class="input-prefix">₹</span>
+              <input type="number" id="originalPrice" placeholder="e.g. 10776" min="0">
+            </div>
+            <div class="field-error" id="err-price">Enter a price greater than 0.</div>
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="existingDiscount">Existing Discount</label>
+              <span class="live-badge" id="badge-existing">0%</span>
+            </div>
+            <div class="input-wrap">
+              <input type="number" id="existingDiscount" placeholder="e.g. 15" min="0" max="99">
+              <span class="input-suffix">%</span>
+            </div>
+            <div class="slider-wrap"><input type="range" id="slider-existing" min="0" max="99" value="0"></div>
+            <div class="field-error" id="err-existing">Must be between 0 and 99.</div>
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="targetDiscount">Desired Final Discount</label>
+              <span class="live-badge" id="badge-target">0%</span>
+            </div>
+            <div class="input-wrap">
+              <input type="number" id="targetDiscount" placeholder="e.g. 80" min="0" max="99">
+              <span class="input-suffix">%</span>
+            </div>
+            <div class="slider-wrap"><input type="range" id="slider-target" min="0" max="99" value="0"></div>
+            <div class="field-error" id="err-target">Must be greater than existing discount.</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="progress-wrap">
+            <div class="progress-label-row">
+              <span style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);">Existing Discount</span>
+              <span id="pb-label-existing" style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted2);">0%</span>
+            </div>
+            <div class="progress-bar-track"><div class="progress-bar-fill pb-existing" id="pb-existing" style="width:0%"></div></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label-row">
+              <span style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);">Coupon Required</span>
+              <span id="pb-label-coupon" style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted2);">0%</span>
+            </div>
+            <div class="progress-bar-track"><div class="progress-bar-fill pb-coupon" id="pb-coupon" style="width:0%"></div></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label-row">
+              <span style="font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:var(--font-mono);">Effective Total Discount</span>
+              <span id="pb-label-total" style="font-family:var(--font-mono);font-size:0.68rem;color:#fff;">0%</span>
+            </div>
+            <div class="progress-bar-track"><div class="progress-bar-fill pb-total" id="pb-total" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="panel-results">
+          <div class="panel-title">Results</div>
+
+          <div class="result-row">
+            <div><div class="result-label">Discounted Price</div><div class="result-sub">After existing discount</div></div>
+            <div class="result-value" id="res-discounted">—</div>
+          </div>
+          <div class="result-row">
+            <div><div class="result-label">Coupon Required</div><div class="result-sub">Apply to discounted price</div></div>
+            <div class="result-value bright" id="res-coupon">—</div>
+          </div>
+          <div class="result-row">
+            <div><div class="result-label">Final Amount</div><div class="result-sub">What you actually pay</div></div>
+            <div class="result-value big" id="res-final">—</div>
+          </div>
+          <div class="result-row">
+            <div><div class="result-label">Total Savings</div><div class="result-sub">Money saved overall</div></div>
+            <div class="result-value bright" id="res-savings">—</div>
+          </div>
+          <div class="result-row">
+            <div><div class="result-label">Effective Discount</div><div class="result-sub">True % off original price</div></div>
+            <div class="result-value bright" id="res-effective">—</div>
+          </div>
+
+          <button class="copy-btn" id="copyBtn" onclick="copyResults()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy Results
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Live Overview</div>
+      <h2 class="section-title">Result Summary</h2>
+    </div>
+    <div class="summary-grid">
+      <div class="card summary-card">
+        <span class="summary-card-icon">🏷️</span>
+        <div class="summary-card-label">Original Price</div>
+        <div class="summary-card-value" id="sc-original">—</div>
+      </div>
+      <div class="card summary-card">
+        <span class="summary-card-icon">✂️</span>
+        <div class="summary-card-label">After Existing Disc.</div>
+        <div class="summary-card-value" id="sc-discounted">—</div>
+      </div>
+      <div class="card summary-card bright">
+        <span class="summary-card-icon">🎟️</span>
+        <div class="summary-card-label">Coupon % Needed</div>
+        <div class="summary-card-value" id="sc-coupon">—</div>
+      </div>
+      <div class="card summary-card bright">
+        <span class="summary-card-icon">💰</span>
+        <div class="summary-card-label">Final Payable</div>
+        <div class="summary-card-value" id="sc-final">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXAMPLE TABLE -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-tag">Reference</div>
+      <h2 class="section-title">Example Scenarios</h2>
+    </div>
+    <div class="card table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Original Price</th>
+            <th>Existing Disc.</th>
+            <th>Target Disc.</th>
+            <th>Discounted Price</th>
+            <th>Coupon Needed</th>
+            <th>Final Amount</th>
+            <th>Savings</th>
+          </tr>
+        </thead>
+        <tbody id="exampleTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div>Built with care — <strong>CouponCalc</strong> · Free discount stack calculator</div>
+    <div class="footer-links">
+      <a href="#">Calculator</a>
+      <a href="#">Examples</a>
+      <a href="https://en.wikipedia.org/wiki/Discounts_and_allowances" target="_blank">Learn More</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+  let state = { results: null };
+
+  const formatINR = n => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(n);
+  const formatPct = n => n.toFixed(2) + '%';
+
+  function calculate(originalPrice, existingDiscount, targetDiscount) {
+    const discountedPrice = originalPrice * (1 - existingDiscount / 100);
+    const couponDiscount = 1 - ((1 - targetDiscount / 100) / (1 - existingDiscount / 100));
+    const finalAmount = discountedPrice * (1 - couponDiscount);
+    const totalSavings = originalPrice - finalAmount;
+    const effectiveDiscount = (totalSavings / originalPrice) * 100;
+    return { discountedPrice, couponDiscount: couponDiscount * 100, finalAmount, totalSavings, effectiveDiscount };
+  }
+
+  function animateValue(el, value) {
+    el.classList.remove('counting'); void el.offsetWidth;
+    el.textContent = value; el.classList.add('counting');
+  }
+
+  function validate() {
+    let valid = true;
+    const p = parseFloat(document.getElementById('originalPrice').value);
+    const e = parseFloat(document.getElementById('existingDiscount').value);
+    const t = parseFloat(document.getElementById('targetDiscount').value);
+
+    const priceEl = document.getElementById('originalPrice'), priceErr = document.getElementById('err-price');
+    if (!isNaN(p) && p <= 0) { priceEl.classList.add('invalid'); priceErr.style.display = 'block'; valid = false; }
+    else { priceEl.classList.remove('invalid'); priceErr.style.display = 'none'; }
+
+    const exEl = document.getElementById('existingDiscount'), exErr = document.getElementById('err-existing');
+    if (!isNaN(e) && (e < 0 || e >= 100)) { exEl.classList.add('invalid'); exErr.style.display = 'block'; valid = false; }
+    else { exEl.classList.remove('invalid'); exErr.style.display = 'none'; }
+
+    const tgEl = document.getElementById('targetDiscount'), tgErr = document.getElementById('err-target');
+    if (!isNaN(t) && (t < 0 || t >= 100 || (!isNaN(e) && t <= e))) { tgEl.classList.add('invalid'); tgErr.style.display = 'block'; valid = false; }
+    else { tgEl.classList.remove('invalid'); tgErr.style.display = 'none'; }
+
+    return valid;
+  }
+
+  function updateUI() {
+    const p = parseFloat(document.getElementById('originalPrice').value);
+    const e = parseFloat(document.getElementById('existingDiscount').value) || 0;
+    const t = parseFloat(document.getElementById('targetDiscount').value) || 0;
+
+    document.getElementById('badge-price').textContent = !isNaN(p) && p > 0 ? formatINR(p) : '₹0';
+    document.getElementById('badge-existing').textContent = e + '%';
+    document.getElementById('badge-target').textContent = t + '%';
+    document.getElementById('slider-existing').value = e;
+    document.getElementById('slider-target').value = t;
+
+    if (!isNaN(p) && p > 0 && t > e && validate()) {
+      const r = calculate(p, e, t);
+      state.results = r;
+
+      animateValue(document.getElementById('res-discounted'), formatINR(r.discountedPrice));
+      animateValue(document.getElementById('res-coupon'), formatPct(r.couponDiscount));
+      animateValue(document.getElementById('res-final'), formatINR(r.finalAmount));
+      animateValue(document.getElementById('res-savings'), formatINR(r.totalSavings));
+      animateValue(document.getElementById('res-effective'), formatPct(r.effectiveDiscount));
+
+      animateValue(document.getElementById('sc-original'), formatINR(p));
+      animateValue(document.getElementById('sc-discounted'), formatINR(r.discountedPrice));
+      animateValue(document.getElementById('sc-coupon'), formatPct(r.couponDiscount));
+      animateValue(document.getElementById('sc-final'), formatINR(r.finalAmount));
+
+      document.getElementById('pb-existing').style.width = Math.min(e, 99) + '%';
+      document.getElementById('pb-coupon').style.width = Math.min(r.couponDiscount, 99) + '%';
+      document.getElementById('pb-total').style.width = Math.min(r.effectiveDiscount, 99) + '%';
+      document.getElementById('pb-label-existing').textContent = formatPct(e);
+      document.getElementById('pb-label-coupon').textContent = formatPct(r.couponDiscount);
+      document.getElementById('pb-label-total').textContent = formatPct(r.effectiveDiscount);
+    } else {
+      ['res-discounted','res-coupon','res-final','res-savings','res-effective'].forEach(id => document.getElementById(id).textContent = '—');
+      ['sc-discounted','sc-coupon','sc-final'].forEach(id => document.getElementById(id).textContent = '—');
+      document.getElementById('sc-original').textContent = !isNaN(p) && p > 0 ? formatINR(p) : '—';
+      ['pb-existing','pb-coupon','pb-total'].forEach(id => document.getElementById(id).style.width = '0%');
+      ['pb-label-existing','pb-label-coupon','pb-label-total'].forEach(id => document.getElementById(id).textContent = '0%');
+      state.results = null;
+    }
+  }
+
+  ['originalPrice','existingDiscount','targetDiscount'].forEach(id => document.getElementById(id).addEventListener('input', updateUI));
+  document.getElementById('slider-existing').addEventListener('input', function() { document.getElementById('existingDiscount').value = this.value; updateUI(); });
+  document.getElementById('slider-target').addEventListener('input', function() { document.getElementById('targetDiscount').value = this.value; updateUI(); });
+
+  function copyResults() {
+    const p = parseFloat(document.getElementById('originalPrice').value);
+    const e = parseFloat(document.getElementById('existingDiscount').value);
+    const t = parseFloat(document.getElementById('targetDiscount').value);
+    if (!state.results) { alert('Enter valid inputs first.'); return; }
+    const r = state.results;
+    const text = `CouponCalc Results\n─────────────────────\nOriginal Price:       ${formatINR(p)}\nExisting Discount:    ${e}%\nDiscounted Price:     ${formatINR(r.discountedPrice)}\nCoupon Required:      ${formatPct(r.couponDiscount)}\nFinal Amount:         ${formatINR(r.finalAmount)}\nTotal Savings:        ${formatINR(r.totalSavings)}\nEffective Discount:   ${formatPct(r.effectiveDiscount)}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.classList.add('copied');
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Results`;
+      }, 2000);
+    });
+  }
+
+  const examples = [
+    { price: 10776, existing: 15, target: 80 },
+    { price: 4999,  existing: 10, target: 60 },
+    { price: 25000, existing: 20, target: 70 },
+    { price: 1299,  existing: 5,  target: 50 },
+    { price: 8500,  existing: 30, target: 75 },
+    { price: 15000, existing: 25, target: 85 },
+  ];
+
+  function buildTable() {
+    const tbody = document.getElementById('exampleTable');
+    tbody.innerHTML = '';
+    examples.forEach(ex => {
+      const r = calculate(ex.price, ex.existing, ex.target);
+      const tr = document.createElement('tr');
+      tr.title = 'Click to load into calculator';
+      tr.innerHTML = `
+        <td>${formatINR(ex.price)}</td>
+        <td>${ex.existing}%</td>
+        <td>${ex.target}%</td>
+        <td>${formatINR(r.discountedPrice)}</td>
+        <td class="td-hi">${formatPct(r.couponDiscount)}</td>
+        <td class="td-bright">${formatINR(r.finalAmount)}</td>
+        <td class="td-hi">${formatINR(r.totalSavings)}</td>
+      `;
+      tr.addEventListener('click', () => {
+        document.getElementById('originalPrice').value = ex.price;
+        document.getElementById('existingDiscount').value = ex.existing;
+        document.getElementById('targetDiscount').value = ex.target;
+        updateUI();
+        document.querySelector('.calc-wrapper').scrollIntoView({ behavior: 'smooth' });
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  buildTable();
+
+  setTimeout(() => {
+    document.getElementById('originalPrice').value = 10776;
+    document.getElementById('existingDiscount').value = 15;
+    document.getElementById('targetDiscount').value = 80;
+    updateUI();
+  }, 300);
+</script>
+</body>
+</html>
