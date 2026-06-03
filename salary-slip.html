@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Salary Slip Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --black:#0a0a0a;
+  --ink:#1c1c1c;
+  --mid:#555;
+  --muted:#888;
+  --border:#d4d4d4;
+  --light:#f4f4f4;
+  --white:#ffffff;
+  --shadow:0 2px 16px rgba(0,0,0,0.09);
+}
+
+body{
+  font-family:'IBM Plex Sans',sans-serif;
+  background:#ebebeb;
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:40px 16px 80px;
+}
+
+.container{
+  width:100%;
+  max-width:1020px;
+  display:grid;
+  grid-template-columns:420px 1fr;
+  gap:24px;
+  align-items:start;
+}
+
+/* ─── FORM PANEL ─── */
+.form-panel{
+  background:var(--white);
+  border-radius:12px;
+  box-shadow:var(--shadow);
+  padding:28px 24px;
+  border:1px solid var(--border);
+}
+
+.form-panel h2{
+  font-size:17px;
+  font-weight:700;
+  color:var(--black);
+  margin-bottom:22px;
+  letter-spacing:-0.01em;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.form-panel h2 span{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  background:var(--black);
+  color:#fff;
+  padding:2px 8px;
+  border-radius:3px;
+}
+
+.sec-title{
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.12em;
+  color:var(--muted);
+  margin-bottom:12px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+
+.form-group{margin-bottom:14px}
+.form-group label{
+  display:block;
+  font-size:11px;
+  font-weight:600;
+  color:var(--mid);
+  text-transform:uppercase;
+  letter-spacing:0.07em;
+  margin-bottom:5px;
+}
+.form-group input{
+  width:100%;
+  padding:9px 12px;
+  border:1.5px solid var(--border);
+  border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13.5px;
+  color:var(--ink);
+  background:#fafafa;
+  transition:border-color 0.15s,background 0.15s;
+}
+.form-group input:focus{
+  outline:none;
+  border-color:var(--black);
+  background:var(--white);
+}
+.form-group select{
+  width:100%;
+  padding:9px 12px;
+  border:1.5px solid var(--border);
+  border-radius:6px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13.5px;
+  color:var(--ink);
+  background:#fafafa;
+  transition:border-color 0.15s,background 0.15s;
+  cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:32px;
+}
+.form-group select:focus{
+  outline:none;
+  border-color:var(--black);
+  background-color:var(--white);
+}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.divider{height:1px;background:var(--border);margin:18px 0}
+
+.dyn-rows{display:flex;flex-direction:column;gap:8px}
+.dyn-row{display:grid;grid-template-columns:1fr 130px 32px;gap:6px;align-items:center}
+.dyn-row input{margin:0;padding:8px 10px;font-size:13px}
+
+.btn-remove{
+  background:none;border:1.5px solid #e5e5e5;
+  color:#aaa;border-radius:5px;
+  width:32px;height:34px;cursor:pointer;
+  font-size:15px;line-height:1;
+  transition:all 0.15s;
+}
+.btn-remove:hover{border-color:#f87171;color:#ef4444;background:#fff5f5}
+
+.btn-add{
+  margin-top:8px;background:none;
+  border:1.5px dashed var(--border);
+  color:var(--muted);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:12px;font-weight:600;
+  padding:7px 14px;border-radius:6px;
+  cursor:pointer;width:100%;
+  transition:all 0.15s;letter-spacing:0.03em;
+}
+.btn-add:hover{border-color:var(--black);color:var(--black);background:var(--light)}
+
+.btn-generate{
+  width:100%;background:var(--black);color:#fff;
+  border:none;border-radius:7px;padding:13px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:14px;font-weight:600;
+  cursor:pointer;margin-top:22px;
+  transition:opacity 0.15s,transform 0.1s;
+  letter-spacing:0.02em;
+}
+.btn-generate:hover{opacity:0.85}
+.btn-generate:active{transform:scale(0.98)}
+
+/* ─── PREVIEW PANEL ─── */
+.preview-panel{position:sticky;top:40px}
+
+.preview-actions{display:flex;gap:8px;margin-bottom:12px}
+
+.btn-dl{
+  flex:1;background:var(--black);color:#fff;
+  border:none;border-radius:7px;padding:11px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:opacity 0.15s;
+}
+.btn-dl:hover{opacity:0.8}
+
+.btn-pr{
+  flex:1;background:var(--white);color:var(--ink);
+  border:1.5px solid var(--border);border-radius:7px;padding:11px;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:background 0.15s;
+}
+.btn-pr:hover{background:var(--light)}
+
+/* ─── SLIP PREVIEW ─── */
+#slip{
+  background:var(--white);
+  border:1px solid #ccc;
+  border-radius:10px;
+  overflow:hidden;
+  font-size:13px;
+}
+
+.slip-head{
+  background:var(--black);
+  color:#fff;
+  padding:24px 28px 20px;
+}
+.slip-head .co{
+  font-size:19px;font-weight:700;
+  letter-spacing:-0.02em;margin-bottom:6px;
+}
+.slip-head .sub{font-size:12px;color:#aaa;margin-bottom:10px}
+.slip-head .tag{
+  display:inline-block;
+  border:1px solid rgba(255,255,255,0.3);
+  font-size:10px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:3px 10px;border-radius:3px;color:#ccc;
+}
+
+.slip-meta{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--border);
+}
+.slip-meta-cell{
+  padding:12px 20px;
+  border-right:1px solid var(--border);
+}
+.slip-meta-cell:nth-child(even){border-right:none}
+.slip-meta-cell:nth-child(3),.slip-meta-cell:nth-child(4){border-top:1px solid var(--border)}
+.meta-lbl{
+  font-size:9.5px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--muted);margin-bottom:2px;
+}
+.meta-val{font-size:13px;font-weight:600;color:var(--ink)}
+
+.slip-table{width:100%;border-collapse:collapse}
+.slip-table thead tr th{
+  background:var(--light);
+  font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.1em;
+  color:var(--muted);padding:10px 20px;
+  text-align:left;border-bottom:1px solid var(--border);
+}
+.slip-table thead tr th:last-child{text-align:right}
+.slip-table tbody tr td{
+  padding:10px 20px;
+  border-bottom:1px solid #f0f0f0;
+  color:var(--ink);font-size:13px;
+}
+.slip-table tbody tr td:last-child{
+  text-align:right;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;font-weight:600;
+}
+.slip-table tbody tr.neg td{color:#b91c1c}
+.slip-table tbody tr.neg td:last-child{color:#b91c1c}
+.slip-table tbody tr.subtotal td{
+  background:#f9f9f9;font-weight:600;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+
+.slip-total{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--black);color:#fff;
+  padding:16px 20px;
+}
+.slip-total .lbl{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase}
+.slip-total .val{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:20px;font-weight:600;letter-spacing:-0.01em;
+}
+
+.slip-foot{
+  padding:12px 20px;
+  font-size:10.5px;color:var(--muted);
+  border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+
+@media print{
+  body{background:white;padding:0}
+  .form-panel,.preview-actions{display:none}
+  .container{grid-template-columns:1fr}
+  .preview-panel{position:static}
+  #slip{box-shadow:none;border-radius:0;border:none}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- FORM -->
+  <div class="form-panel">
+    <h2>Salary Slip <span>Generator</span></h2>
+
+    <div class="sec-title">Company & Period</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" id="company" value="ReadyTeam Pvt. Ltd."/>
+      </div>
+      <div class="form-group">
+        <label>Month & Year</label>
+        <input type="month" id="period" value="2026-04"/>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sec-title">Employee Details</div>
+    <div class="form-group">
+      <label>Select Employee</label>
+      <select id="empSelect" onchange="fillEmployee()">
+        <option value="">— Select Employee —</option>
+        <option value="0">Shivang Pokar — EMP-001</option>
+        <option value="1">Shivam Sikotra — EMP-002</option>
+        <option value="2">Harshit Kachhadiya — EMP-003</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Employee Name</label>
+        <input type="text" id="empName" value=""/>
+      </div>
+      <div class="form-group">
+        <label>Employee ID</label>
+        <input type="text" id="empId" value=""/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Designation</label>
+        <input type="text" id="desig" value="" placeholder="Optional"/>
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" id="dept" value="" placeholder="Optional"/>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sec-title">Salary Calculation</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Base Salary (₹)</label>
+        <input type="number" id="base" value="150000"/>
+      </div>
+      <div class="form-group">
+        <label>Working Days</label>
+        <input type="number" id="wdays" value="31"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Days Absent</label>
+        <input type="number" id="absent" value="0"/>
+      </div>
+      <div class="form-group">
+        <label>Other Office Expenses (₹)</label>
+        <input type="number" id="office" value="1233"/>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sec-title">Additional Earnings</div>
+    <div class="dyn-rows" id="earnRows"></div>
+    <button class="btn-add" onclick="addDynRow('earn')">+ Add Earning</button>
+
+    <div class="divider"></div>
+    <div class="sec-title">Deductions</div>
+    <div class="dyn-rows" id="dedRows"></div>
+    <button class="btn-add" onclick="addDynRow('ded')">+ Add Deduction</button>
+
+    <button class="btn-generate" onclick="generate()">↺  Refresh Preview</button>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-actions">
+      <button class="btn-dl" onclick="dlPDF()">↓ Download PDF</button>
+      <button class="btn-pr" onclick="window.print()">⎙ Print</button>
+    </div>
+    <div id="slip"></div>
+  </div>
+
+</div>
+<script>
+const MO = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function fmtINR(n){
+  return '₹' + parseFloat(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtMono(n){
+  return parseFloat(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function addDynRow(type){
+  const c = document.getElementById(type+'Rows');
+  const d = document.createElement('div');
+  d.className='dyn-row';
+  d.innerHTML=`<input type="text" placeholder="Label"/><input type="number" placeholder="Amount (₹)"/><button class="btn-remove" onclick="this.parentElement.remove();generate()">×</button>`;
+  c.appendChild(d);
+  d.querySelectorAll('input').forEach(i=>i.addEventListener('input',generate));
+}
+
+function getDynRows(type){
+  const rows=[];
+  document.querySelectorAll('#'+type+'Rows .dyn-row').forEach(r=>{
+    const ins=r.querySelectorAll('input');
+    const lbl=ins[0].value.trim();
+    const amt=parseFloat(ins[1].value)||0;
+    if(lbl||amt) rows.push({lbl:lbl||'Misc',amt});
+  });
+  return rows;
+}
+
+function calcAll(){
+  const base   = parseFloat(document.getElementById('base').value)||0;
+  const wdays  = parseFloat(document.getElementById('wdays').value)||1;
+  const absent = parseFloat(document.getElementById('absent').value)||0;
+  const office = parseFloat(document.getElementById('office').value)||0;
+  const perDay = base/wdays;
+  const dedAmt = perDay*absent;
+  const earned = base-dedAmt;
+  const earns  = getDynRows('earn');
+  const deds   = getDynRows('ded');
+  const extraEarn = earns.reduce((s,r)=>s+r.amt,0);
+  const extraDed  = deds.reduce((s,r)=>s+r.amt,0);
+  const gross  = earned+office+extraEarn;
+  const net    = gross-extraDed;
+  return {base,wdays,absent,office,perDay,dedAmt,earned,earns,deds,extraEarn,extraDed,gross,net};
+}
+
+const EMPLOYEES = [
+  {name:'Shivang Pokar',  id:'EMP-001', base:150000},
+  {name:'Shivam Sikotra', id:'EMP-002', base:54167},
+  {name:'Harshit Kachhadiya', id:'EMP-003', base:20000},
+];
+
+function fillEmployee(){
+  const idx = document.getElementById('empSelect').value;
+  if(idx === '') return;
+  const e = EMPLOYEES[parseInt(idx)];
+  document.getElementById('empName').value = e.name;
+  document.getElementById('empId').value   = e.id;
+  document.getElementById('base').value    = e.base;
+  document.getElementById('desig').value   = '';
+  document.getElementById('dept').value    = '';
+  generate();
+}
+
+function generate(){
+  const company = document.getElementById('company').value||'Company';
+  const pv      = document.getElementById('period').value;
+  const name    = document.getElementById('empName').value||'—';
+  const empId   = document.getElementById('empId').value||'—';
+  const desig   = document.getElementById('desig').value||'—';
+  const dept    = document.getElementById('dept').value||'—';
+  const [yr,mo] = pv ? pv.split('-') : ['2026','04'];
+  const month   = MO[parseInt(mo)-1]+' '+yr;
+  const c       = calcAll();
+
+  const earnRows = c.earns.map(r=>`<tr><td>${r.lbl}</td><td>${fmtINR(r.amt)}</td></tr>`).join('');
+  const dedRows  = c.deds.map(r=>`<tr class="neg"><td>${r.lbl}</td><td>− ${fmtINR(r.amt)}</td></tr>`).join('');
+
+  document.getElementById('slip').innerHTML=`
+  <div class="slip-head">
+    <div class="co">${company}</div>
+    <div class="sub">Employee Salary Statement</div>
+    <div class="tag">${month.toUpperCase()}</div>
+  </div>
+
+  <div class="slip-meta">
+    <div class="slip-meta-cell"><div class="meta-lbl">Employee Name</div><div class="meta-val">${name}</div></div>
+    <div class="slip-meta-cell"><div class="meta-lbl">Employee ID</div><div class="meta-val">${empId}</div></div>
+    <div class="slip-meta-cell"><div class="meta-lbl">Designation</div><div class="meta-val">${desig}</div></div>
+    <div class="slip-meta-cell"><div class="meta-lbl">Department</div><div class="meta-val">${dept}</div></div>
+  </div>
+
+  <table class="slip-table">
+    <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Base Salary</td><td>${fmtINR(c.base)}</td></tr>
+      <tr><td style="color:#888;font-size:12px;padding-left:32px">@ ${fmtINR(c.perDay)} x ${c.wdays} days</td><td></td></tr>
+      ${c.absent>0?`<tr class="neg"><td>Absent Deduction (${c.absent} day${c.absent>1?'s':''} x ${fmtINR(c.perDay)})</td><td>- ${fmtINR(c.dedAmt)}</td></tr>`:''}
+      <tr class="subtotal"><td>Earned Basic</td><td>${fmtINR(c.earned)}</td></tr>
+      <tr><td>Other Office Expenses</td><td>${fmtINR(c.office)}</td></tr>
+      ${earnRows}
+      ${dedRows}
+    </tbody>
+  </table>
+
+  <div class="slip-total">
+    <div class="lbl">Net Pay</div>
+    <div class="val">Rs.${fmtMono(c.net)}</div>
+  </div>
+
+  <div class="slip-foot">
+    <span>Pay Period: ${month}</span>
+    <span>Generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
+  </div>
+  `;
+}
+
+function dlPDF(){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'pt',format:'a4'});
+  const W   = doc.internal.pageSize.getWidth();
+  const H   = doc.internal.pageSize.getHeight();
+
+  const company = document.getElementById('company').value||'Company';
+  const pv      = document.getElementById('period').value;
+  const name    = document.getElementById('empName').value||'—';
+  const empId   = document.getElementById('empId').value||'—';
+  const desig   = document.getElementById('desig').value||'—';
+  const dept    = document.getElementById('dept').value||'—';
+  const [yr,mo] = pv ? pv.split('-') : ['2026','04'];
+  const month   = MO[parseInt(mo)-1]+' '+yr;
+  const c       = calcAll();
+
+  const BLK=[10,10,10], WHT=[255,255,255], GRY=[90,90,90], LGT=[245,245,245], BDR=[210,210,210];
+
+  // ── Header block ──
+  doc.setFillColor(...BLK);
+  doc.rect(0,0,W,88,'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(18);
+  doc.setTextColor(...WHT);
+  doc.text(company, 40, 32);
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(160,160,160);
+  doc.text('Employee Salary Statement', 40, 50);
+
+  // month tag (outlined box)
+  const tagLabel = month.toUpperCase();
+  doc.setFontSize(8);
+  doc.setFont('helvetica','bold');
+  const tagW = doc.getTextWidth(tagLabel)+20;
+  doc.setDrawColor(100,100,100);
+  doc.setLineWidth(0.6);
+  doc.rect(40, 58, tagW, 16);
+  doc.setTextColor(180,180,180);
+  doc.text(tagLabel, 50, 69.5);
+
+  // ── Meta grid ──
+  const metaY = 100;
+  const col   = (W-80)/2;
+  const metas = [
+    ['EMPLOYEE NAME',name],['EMPLOYEE ID',empId],
+    ['DESIGNATION',desig],['DEPARTMENT',dept]
+  ];
+
+  // outer border for meta section
+  doc.setDrawColor(...BDR);
+  doc.setLineWidth(0.5);
+  doc.rect(40, metaY, W-80, 64);
+  // vertical divider
+  doc.line(40+col, metaY, 40+col, metaY+64);
+  // horizontal divider
+  doc.line(40, metaY+32, W-40, metaY+32);
+
+  metas.forEach(([lbl,val],i)=>{
+    const x = 40+(i%2)*col+12;
+    const y = metaY+(Math.floor(i/2)*32)+12;
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...GRY);
+    doc.text(lbl, x, y);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(11);
+    doc.setTextColor(...BLK);
+    doc.text(val, x, y+13);
+  });
+
+  // ── Salary Table ──
+  const rows=[];
+
+  rows.push([{content:'Base Salary',styles:{fontStyle:'normal'}},{content:`Rs.${fmtMono(c.base)}`,styles:{halign:'right'}}]);
+  rows.push([{content:`   @ Rs.${fmtMono(c.perDay)} x ${c.wdays} days`,styles:{textColor:[150,150,150],fontSize:9}},{content:'',styles:{}}]);
+
+  if(c.absent>0){
+    rows.push([
+      {content:`Absent Deduction  (${c.absent} day × Rs.${fmtMono(c.perDay)})`,styles:{textColor:[180,40,40]}},
+      {content:`- Rs.${fmtMono(c.dedAmt)}`,styles:{halign:'right',textColor:[180,40,40]}}
+    ]);
+  }
+
+  rows.push([
+    {content:'Earned Basic',styles:{fontStyle:'bold',fillColor:LGT}},
+    {content:`Rs.${fmtMono(c.earned)}`,styles:{halign:'right',fontStyle:'bold',fillColor:LGT}}
+  ]);
+
+  rows.push([
+    {content:'Other Office Expenses',styles:{}},
+    {content:`Rs.${fmtMono(c.office)}`,styles:{halign:'right'}}
+  ]);
+
+  c.earns.forEach(r=>{
+    rows.push([{content:r.lbl},{content:`Rs.${fmtMono(r.amt)}`,styles:{halign:'right'}}]);
+  });
+
+  c.deds.forEach(r=>{
+    rows.push([
+      {content:r.lbl,styles:{textColor:[180,40,40]}},
+      {content:`- Rs.${fmtMono(r.amt)}`,styles:{halign:'right',textColor:[180,40,40]}}
+    ]);
+  });
+
+  doc.autoTable({
+    startY: metaY+80,
+    head:[[
+      {content:'DESCRIPTION',styles:{fillColor:LGT,textColor:GRY,fontStyle:'bold',fontSize:8}},
+      {content:'AMOUNT',styles:{fillColor:LGT,textColor:GRY,fontStyle:'bold',fontSize:8,halign:'right'}}
+    ]],
+    body: rows,
+    theme:'plain',
+    styles:{
+      font:'helvetica',fontSize:11,
+      textColor:BLK,cellPadding:{top:9,bottom:9,left:12,right:12},
+      lineColor:BDR,lineWidth:0.4
+    },
+    headStyles:{cellPadding:{top:9,bottom:9,left:12,right:12},lineWidth:0.4,lineColor:BDR},
+    columnStyles:{
+      0:{cellWidth:W-200},
+      1:{cellWidth:120,halign:'right'}
+    },
+    margin:{left:40,right:40},
+    tableLineColor:BDR,
+    tableLineWidth:0.5,
+  });
+
+  // ── Net Pay footer bar ──
+  const tableBottom = doc.lastAutoTable.finalY;
+  const barH = 48;
+  doc.setFillColor(...BLK);
+  doc.rect(40, tableBottom, W-80, barH, 'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(160,160,160);
+  doc.text('NET PAY', 52, tableBottom+19);
+
+  doc.setFontSize(18);
+  doc.setTextColor(...WHT);
+  const netStr = `Rs.${fmtMono(c.net)}`;
+  const netW   = doc.getTextWidth(netStr);
+  doc.text(netStr, W-40-netW, tableBottom+31);
+
+  // ── Footer ──
+  const footY = tableBottom+barH+22;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(150,150,150);
+  doc.text(`Pay Period: ${month}`, 40, footY);
+  const genTxt = `Generated on ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}`;
+  doc.text(genTxt, W-40-doc.getTextWidth(genTxt), footY);
+
+  // thin top rule for footer
+  doc.setDrawColor(...BDR);
+  doc.setLineWidth(0.4);
+  doc.line(40, footY-10, W-40, footY-10);
+
+  doc.save(`SalarySlip_${name.replace(/\s+/g,'_')}_${month.replace(/\s+/g,'_')}.pdf`);
+}
+
+// auto-wire live update
+document.querySelectorAll('input').forEach(el=>el.addEventListener('input',generate));
+document.getElementById('empSelect').addEventListener('change',generate);
+generate();
+</script>
+</body>
+</html>
