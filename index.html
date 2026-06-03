@@ -1,574 +1,499 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dev Docs · Home</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --bg: #0a0d14;
-        --surface: #111520;
-        --surface2: #161c2e;
-        --border: #1e2740;
-        --accent: #3b82f6;
-        --accent2: #06b6d4;
-        --green: #10b981;
-        --amber: #f59e0b;
-        --red: #ef4444;
-        --text: #e2e8f0;
-        --muted: #64748b;
-        --code-bg: #0d1117;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReadyTeam Dev Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f8f9fb;
+    --surface:  #ffffff;
+    --surface2: #f0f2f7;
+    --border:   #e2e6ef;
+    --border2:  #c9d0df;
+    --text:     #0f1623;
+    --text2:    #4b5675;
+    --muted:    #8b95aa;
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+    --blue:     #2563eb;
+    --blue-lt:  #eff4ff;
+    --blue-bd:  #c7d8fd;
+    --blue-dk:  #1d4ed8;
 
-      body {
-        background: var(--bg);
-        color: var(--text);
-        font-family: "Syne", sans-serif;
-        line-height: 1.6;
-        min-height: 100vh;
-      }
+    --cyan:     #0891b2;
+    --cyan-lt:  #ecfeff;
+    --cyan-bd:  #a5f3fc;
 
-      /* ── GRID BG ─────────────────────────────── */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background-image:
-          linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
-        background-size: 48px 48px;
-        pointer-events: none;
-        z-index: 0;
-      }
+    --violet:   #7c3aed;
+    --violet-lt:#f5f3ff;
+    --violet-bd:#ddd6fe;
 
-      /* ── HEADER ─────────────────────────────── */
-      header {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: rgba(10, 13, 20, 0.92);
-        backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--border);
-        padding: 0 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 56px;
-      }
+    --green:    #059669;
+    --green-lt: #ecfdf5;
+    --green-bd: #a7f3d0;
 
-      .logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--accent);
-        text-decoration: none;
-      }
+    --amber:    #d97706;
+    --amber-lt: #fffbeb;
+    --amber-bd: #fde68a;
 
-      .logo-icon {
-        width: 28px;
-        height: 28px;
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-      }
+    --sans: 'Plus Jakarta Sans', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
 
-      .header-badge {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.7rem;
-        color: var(--muted);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 3px 10px;
-        border-radius: 4px;
-        letter-spacing: 0.05em;
-      }
+    --r-sm: 8px;
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 20px;
 
-      /* ── HERO ───────────────────────────────── */
-      .hero {
-        position: relative;
-        z-index: 1;
-        padding: 100px 2rem 72px;
-        max-width: 960px;
-        margin: 0 auto;
-        text-align: center;
-      }
+    --shadow-xs: 0 1px 2px rgba(15,22,35,0.05);
+    --shadow-sm: 0 2px 8px rgba(15,22,35,0.07), 0 1px 2px rgba(15,22,35,0.05);
+    --shadow-md: 0 4px 20px rgba(15,22,35,0.09), 0 1px 4px rgba(15,22,35,0.06);
+    --shadow-lg: 0 8px 40px rgba(15,22,35,0.12), 0 2px 8px rgba(15,22,35,0.07);
+    --shadow-hover: 0 12px 48px rgba(37,99,235,0.14), 0 2px 8px rgba(15,22,35,0.08);
+  }
 
-      .hero-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.72rem;
-        color: var(--accent2);
-        background: rgba(6, 182, 212, 0.08);
-        border: 1px solid rgba(6, 182, 212, 0.2);
-        padding: 4px 14px;
-        border-radius: 999px;
-        margin-bottom: 28px;
-        letter-spacing: 0.05em;
-      }
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
 
-      .hero-label::before {
-        content: "";
-        width: 6px;
-        height: 6px;
-        background: var(--accent2);
-        border-radius: 50%;
-        animation: pulse 2s infinite;
-      }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
 
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-          transform: scale(1);
-        }
-        50% {
-          opacity: 0.5;
-          transform: scale(0.8);
-        }
-      }
+  /* ── SUBTLE TEXTURE ─────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 0% 0%,   rgba(37,99,235,0.055) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 100% 100%, rgba(124,58,237,0.04) 0%, transparent 55%);
+  }
 
-      h1 {
-        font-size: clamp(2.6rem, 6vw, 4rem);
-        font-weight: 800;
-        line-height: 1.08;
-        letter-spacing: -0.03em;
-        margin-bottom: 20px;
-      }
+  /* ── HEADER ─────────────────────── */
+  header {
+    position: sticky; top: 0; z-index: 200;
+    height: 60px;
+    background: rgba(248,249,251,0.88);
+    backdrop-filter: blur(18px) saturate(1.6);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-xs);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem;
+  }
 
-      h1 span {
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    text-decoration: none; color: var(--text);
+  }
+  .logo-mark {
+    width: 32px; height: 32px; border-radius: var(--r-sm);
+    background: linear-gradient(135deg, var(--blue) 0%, #60a5fa 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; color: #fff;
+    letter-spacing: -0.5px; box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  }
+  .logo-name {
+    font-size: 0.9rem; font-weight: 700;
+    letter-spacing: -0.01em; color: var(--text);
+  }
+  .logo-name span { color: var(--blue); }
 
-      .hero-sub {
-        font-size: 1.05rem;
-        color: var(--muted);
-        max-width: 480px;
-        margin: 0 auto 48px;
-        font-weight: 400;
-      }
+  .nav-right {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-pill {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+    color: var(--muted); background: var(--surface);
+    border: 1px solid var(--border); padding: 4px 12px;
+    border-radius: 999px; letter-spacing: 0.04em;
+    box-shadow: var(--shadow-xs);
+  }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+    color: var(--green); background: var(--green-lt);
+    border: 1px solid var(--green-bd); padding: 4px 12px;
+    border-radius: 999px;
+  }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--green); flex-shrink: 0;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(0.75); }
+  }
 
-      .hero-meta {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 24px;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.72rem;
-        color: var(--muted);
-      }
+  /* ── HERO ────────────────────────── */
+  .hero {
+    position: relative; z-index: 1;
+    max-width: 880px; margin: 0 auto;
+    padding: 88px 2.5rem 68px;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+  }
 
-      .hero-meta span {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-      }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
+    color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase;
+    background: var(--blue-lt); border: 1px solid var(--blue-bd);
+    padding: 5px 16px; border-radius: 999px; margin-bottom: 28px;
+    box-shadow: var(--shadow-xs);
+    opacity: 0; animation: up 0.5s ease 0.05s forwards;
+  }
+  .eyebrow-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--blue); flex-shrink: 0;
+  }
 
-      .dot-green {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--green);
-      }
-      .dot-amber {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--amber);
-      }
+  h1 {
+    font-size: clamp(2.6rem, 5.5vw, 4rem);
+    font-weight: 800; line-height: 1.07; letter-spacing: -0.04em;
+    color: var(--text); margin-bottom: 20px;
+    opacity: 0; animation: up 0.5s ease 0.12s forwards;
+  }
+  h1 .grad {
+    background: linear-gradient(100deg, var(--blue) 20%, var(--cyan) 80%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
-      /* ── DIVIDER ─────────────────────────────── */
-      .divider {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 0 2rem;
-        position: relative;
-        z-index: 1;
-      }
+  .hero-sub {
+    font-size: 1.05rem; line-height: 1.65; color: var(--text2);
+    max-width: 460px; font-weight: 400; margin-bottom: 52px;
+    opacity: 0; animation: up 0.5s ease 0.2s forwards;
+  }
 
-      .divider-line {
-        height: 1px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          var(--border),
-          transparent
-        );
-      }
+  /* stat row */
+  .stats {
+    display: flex; align-items: center; gap: 0;
+    border: 1px solid var(--border); border-radius: var(--r-lg);
+    background: var(--surface); box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    opacity: 0; animation: up 0.5s ease 0.28s forwards;
+  }
+  .stat-item {
+    padding: 14px 28px; display: flex; flex-direction: column;
+    align-items: center; gap: 2px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-size: 1.35rem; font-weight: 800; letter-spacing: -0.03em;
+    color: var(--text); line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--mono); font-size: 0.66rem; font-weight: 500;
+    color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase;
+  }
 
-      /* ── CARDS GRID ──────────────────────────── */
-      .cards-section {
-        position: relative;
-        z-index: 1;
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 64px 2rem 80px;
-      }
+  @keyframes up {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:none; }
+  }
 
-      .section-label {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.7rem;
-        font-weight: 700;
-        color: var(--accent);
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        margin-bottom: 32px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+  /* ── DIVIDER ─────────────────────── */
+  .sep {
+    position: relative; z-index: 1;
+    max-width: 880px; margin: 0 auto; padding: 0 2.5rem;
+  }
+  .sep-inner {
+    display: flex; align-items: center; gap: 16px;
+    font-family: var(--mono); font-size: 0.67rem; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .sep-line { flex: 1; height: 1px; background: var(--border); }
 
-      .section-label::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: var(--border);
-      }
+  /* ── CARDS ───────────────────────── */
+  .cards-wrap {
+    position: relative; z-index: 1;
+    max-width: 880px; margin: 0 auto;
+    padding: 44px 2.5rem 96px;
+  }
 
-      .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-      }
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+  }
 
-      /* ── CARD ────────────────────────────────── */
-      .card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 28px;
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        position: relative;
-        overflow: hidden;
-        transition:
-          border-color 0.2s,
-          transform 0.2s,
-          box-shadow 0.2s;
-        cursor: pointer;
-      }
+  /* ── CARD ────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: 28px 26px 24px;
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.22s cubic-bezier(.25,.8,.25,1),
+                box-shadow 0.22s cubic-bezier(.25,.8,.25,1),
+                border-color 0.22s;
+    opacity: 0; animation: up 0.5s ease forwards;
+  }
+  .card:nth-child(1) { animation-delay: 0.34s; }
+  .card:nth-child(2) { animation-delay: 0.42s; }
+  .card:nth-child(3) { animation-delay: 0.50s; }
 
-      .card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(59, 130, 246, 0.04),
-          transparent 60%
-        );
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
+  .card:hover:not(.disabled) {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--blue-bd);
+  }
 
-      .card:hover {
-        border-color: rgba(59, 130, 246, 0.35);
-        transform: translateY(-3px);
-        box-shadow:
-          0 12px 40px rgba(0, 0, 0, 0.4),
-          0 0 0 1px rgba(59, 130, 246, 0.1);
-      }
+  .card.disabled {
+    opacity: 0.5; pointer-events: none; animation-delay: 0.50s;
+    box-shadow: none;
+  }
 
-      .card:hover::before {
-        opacity: 1;
-      }
+  /* top accent strip */
+  .card-accent {
+    height: 3px; border-radius: 2px; margin: -28px -26px 0;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+  }
+  .a-blue   { background: linear-gradient(90deg, var(--blue),   #60a5fa); }
+  .a-cyan   { background: linear-gradient(90deg, var(--cyan),   #22d3ee); }
+  .a-violet { background: linear-gradient(90deg, var(--violet), #a78bfa); }
+  .a-gray   { background: var(--border); }
 
-      .card-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-      }
+  /* ── CARD HEADER ─── */
+  .card-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 10px; margin-top: 16px;
+  }
+  .card-icon {
+    width: 48px; height: 48px; border-radius: var(--r-md); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; box-shadow: var(--shadow-xs);
+  }
+  .ic-blue   { background: var(--blue-lt);   border: 1px solid var(--blue-bd); }
+  .ic-cyan   { background: var(--cyan-lt);   border: 1px solid var(--cyan-bd); }
+  .ic-violet { background: var(--violet-lt); border: 1px solid var(--violet-bd); }
+  .ic-gray   { background: var(--surface2);  border: 1px solid var(--border); }
 
-      .card-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        flex-shrink: 0;
-      }
+  .card-arrow {
+    font-size: 15px; color: var(--muted);
+    transition: color 0.2s, transform 0.2s;
+  }
+  .card:hover .card-arrow { color: var(--blue); transform: translate(3px,-3px); }
 
-      .card-icon.blue {
-        background: rgba(59, 130, 246, 0.12);
-        border: 1px solid rgba(59, 130, 246, 0.2);
-      }
-      .card-icon.cyan {
-        background: rgba(6, 182, 212, 0.12);
-        border: 1px solid rgba(6, 182, 212, 0.2);
-      }
-      .card-icon.green {
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-      }
-      .card-icon.amber {
-        background: rgba(245, 158, 11, 0.12);
-        border: 1px solid rgba(245, 158, 11, 0.2);
-      }
+  /* ── CARD BODY ─── */
+  .card-title {
+    font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--text); line-height: 1.3;
+  }
+  .card-desc {
+    font-size: 0.84rem; color: var(--text2); line-height: 1.62;
+    font-weight: 400;
+  }
 
-      .card-arrow {
-        color: var(--muted);
-        font-size: 18px;
-        transition:
-          color 0.2s,
-          transform 0.2s;
-        margin-top: 2px;
-      }
+  /* ── CARD META ─── */
+  .card-meta {
+    margin-top: auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag {
+    font-family: var(--mono); font-size: 0.63rem; font-weight: 500;
+    padding: 3px 8px; border-radius: 5px; letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .tg-blue   { background: var(--blue-lt);   color: var(--blue);   border: 1px solid var(--blue-bd); }
+  .tg-cyan   { background: var(--cyan-lt);   color: var(--cyan);   border: 1px solid var(--cyan-bd); }
+  .tg-violet { background: var(--violet-lt); color: var(--violet); border: 1px solid var(--violet-bd); }
+  .tg-green  { background: var(--green-lt);  color: var(--green);  border: 1px solid var(--green-bd); }
+  .tg-amber  { background: var(--amber-lt);  color: var(--amber);  border: 1px solid var(--amber-bd); }
+  .tg-gray   { background: var(--surface2);  color: var(--muted);  border: 1px solid var(--border); }
 
-      .card:hover .card-arrow {
-        color: var(--accent);
-        transform: translate(2px, -2px);
-      }
+  .card-cta {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.75rem; font-weight: 600; color: var(--blue);
+    background: var(--blue-lt); border: 1px solid var(--blue-bd);
+    padding: 5px 12px; border-radius: 999px;
+    transition: background 0.18s, border-color 0.18s;
+    white-space: nowrap;
+  }
+  .card:hover .card-cta { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .disabled .card-cta { display: none; }
 
-      .card-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        letter-spacing: -0.01em;
-        color: var(--text);
-      }
+  /* ── FOOTER ─────────────────────── */
+  footer {
+    position: relative; z-index: 1;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    padding: 20px 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+  }
+  .footer-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .footer-logo {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--blue) 0%, #60a5fa 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 10px; color: #fff; letter-spacing: -0.5px;
+  }
+  .footer-text {
+    font-family: var(--mono); font-size: 0.68rem; color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .footer-link {
+    font-family: var(--mono); font-size: 0.68rem; color: var(--blue);
+    text-decoration: none; letter-spacing: 0.04em;
+  }
+  .footer-link:hover { text-decoration: underline; }
 
-      .card-desc {
-        font-size: 0.85rem;
-        color: var(--muted);
-        line-height: 1.55;
-        font-weight: 400;
-      }
+  /* ── RESPONSIVE ─────────────────── */
+  @media (max-width: 640px) {
+    header { padding: 0 1.25rem; }
+    .hero  { padding: 64px 1.25rem 52px; }
+    .sep, .cards-wrap { padding-left: 1.25rem; padding-right: 1.25rem; }
+    h1 { font-size: 2.4rem; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .stats { flex-direction: column; border-radius: var(--r-lg); }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); width: 100%; }
+    .stat-item:last-child { border-bottom: none; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
 
-      .card-footer {
-        margin-top: auto;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
+<!-- HEADER -->
+<header>
+  <a class="logo" href="index.html" aria-label="ReadyTeam Dev Docs home">
+    <div class="logo-mark" aria-hidden="true">RT</div>
+    <span class="logo-name">Ready<span>Team</span> Docs</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-pill">internal</span>
+    <span class="live-pill"><span class="live-dot" aria-hidden="true"></span>live</span>
+  </div>
+</header>
 
-      .tag {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.68rem;
-        padding: 3px 8px;
-        border-radius: 4px;
-        letter-spacing: 0.04em;
-      }
+<!-- HERO -->
+<section class="hero" aria-label="Introduction">
+  <div class="eyebrow" aria-hidden="true">
+    <span class="eyebrow-dot"></span>
+    Developer Knowledge Base
+  </div>
 
-      .tag-blue {
-        background: rgba(59, 130, 246, 0.1);
-        color: #60a5fa;
-        border: 1px solid rgba(59, 130, 246, 0.15);
-      }
-      .tag-cyan {
-        background: rgba(6, 182, 212, 0.1);
-        color: #22d3ee;
-        border: 1px solid rgba(6, 182, 212, 0.15);
-      }
-      .tag-green {
-        background: rgba(16, 185, 129, 0.1);
-        color: #34d399;
-        border: 1px solid rgba(16, 185, 129, 0.15);
-      }
-      .tag-amber {
-        background: rgba(245, 158, 11, 0.1);
-        color: #fbbf24;
-        border: 1px solid rgba(245, 158, 11, 0.15);
-      }
+  <h1>Ship faster with<br><span class="grad">the right guides</span></h1>
 
-      /* ── COMING SOON CARD ────────────────────── */
-      .card.coming-soon {
-        opacity: 0.5;
-        pointer-events: none;
-      }
+  <p class="hero-sub">
+    Standards, workflows, and references your team actually needs — no more digging through Slack threads or guessing conventions.
+  </p>
 
-      .card.coming-soon .card-title {
-        color: var(--muted);
-      }
-
-      .coming-badge {
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.65rem;
-        padding: 2px 8px;
-        border-radius: 4px;
-        background: rgba(100, 116, 139, 0.12);
-        color: var(--muted);
-        border: 1px solid rgba(100, 116, 139, 0.2);
-        letter-spacing: 0.06em;
-      }
-
-      /* ── FOOTER ──────────────────────────────── */
-      footer {
-        position: relative;
-        z-index: 1;
-        border-top: 1px solid var(--border);
-        text-align: center;
-        padding: 24px 2rem;
-        font-family: "JetBrains Mono", monospace;
-        font-size: 0.72rem;
-        color: var(--muted);
-        letter-spacing: 0.04em;
-      }
-
-      /* ── ANIMATE IN ──────────────────────────── */
-      .fade-up {
-        opacity: 0;
-        transform: translateY(18px);
-        animation: fadeUp 0.5s ease forwards;
-      }
-
-      @keyframes fadeUp {
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-
-      .fade-up:nth-child(1) {
-        animation-delay: 0.05s;
-      }
-      .fade-up:nth-child(2) {
-        animation-delay: 0.12s;
-      }
-      .fade-up:nth-child(3) {
-        animation-delay: 0.19s;
-      }
-      .fade-up:nth-child(4) {
-        animation-delay: 0.26s;
-      }
-
-      .hero-anim {
-        opacity: 0;
-        transform: translateY(16px);
-        animation: fadeUp 0.6s ease forwards;
-      }
-      .hero-anim:nth-child(1) {
-        animation-delay: 0s;
-      }
-      .hero-anim:nth-child(2) {
-        animation-delay: 0.1s;
-      }
-      .hero-anim:nth-child(3) {
-        animation-delay: 0.2s;
-      }
-      .hero-anim:nth-child(4) {
-        animation-delay: 0.3s;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <a class="logo" href="index.html">
-        <div class="logo-icon">⬡</div>
-        Dev Docs
-      </a>
-      <div class="header-badge">internal · v1.0</div>
-    </header>
-
-    <div class="hero">
-      <div class="hero-label hero-anim">Internal Developer Knowledge Base</div>
-      <h1 class="hero-anim">
-        Everything your<br />team needs to <span>ship faster</span>
-      </h1>
-      <p class="hero-sub hero-anim">
-        Guides, workflows, and references — all in one place. Pick a topic
-        below.
-      </p>
-      <div class="hero-meta hero-anim">
-        <span><span class="dot-green"></span> 2 guides available</span>
-        <span>·</span>
-        <span><span class="dot-amber"></span> More coming soon</span>
-      </div>
+  <div class="stats" role="list" aria-label="Documentation statistics">
+    <div class="stat-item" role="listitem">
+      <span class="stat-num">2</span>
+      <span class="stat-label">Guides</span>
     </div>
+    <div class="stat-item" role="listitem">
+      <span class="stat-num">v1.0</span>
+      <span class="stat-label">Version</span>
+    </div>
+    <div class="stat-item" role="listitem">
+      <span class="stat-num">Live</span>
+      <span class="stat-label">Status</span>
+    </div>
+  </div>
+</section>
 
-    <div class="divider"><div class="divider-line"></div></div>
+<!-- SECTION DIVIDER -->
+<div class="sep" aria-hidden="true">
+  <div class="sep-inner">
+    <div class="sep-line"></div>
+    <span>Guides</span>
+    <div class="sep-line"></div>
+  </div>
+</div>
 
-    <div class="cards-section">
-      <div class="section-label">Documentation</div>
+<!-- CARDS -->
+<main class="cards-wrap">
+  <div class="cards-grid">
 
-      <div class="cards-grid">
-        <!-- Card 1: Git Workflow -->
-        <a class="card fade-up" href="git-workflow-guide.html">
-          <div class="card-top">
-            <div class="card-icon blue">⎇</div>
-            <span class="card-arrow">↗</span>
-          </div>
-          <div>
-            <div class="card-title">Git Workflow Guide</div>
-            <div class="card-desc">
-              Branch strategy, rebase, stash, commit conventions, and PR flow
-              for the team.
-            </div>
-          </div>
-          <div class="card-footer">
-            <span class="tag tag-blue">branching</span>
-            <span class="tag tag-cyan">rebase</span>
-            <span class="tag tag-green">commits</span>
-          </div>
-        </a>
+    <!-- Card 1: Git Workflow -->
+    <a class="card" href="git-workflow-guide.html" aria-label="Open Git Workflow Guide">
+      <div class="card-accent a-blue" aria-hidden="true"></div>
+      <div class="card-head">
+        <div class="card-icon ic-blue" aria-hidden="true">⎇</div>
+        <span class="card-arrow" aria-hidden="true">↗</span>
+      </div>
+      <div>
+        <div class="card-title">Git Workflow Guide</div>
+        <div class="card-desc">Branch strategy, PR flow, rebase, stash, commit conventions, and daily push rules for the whole team.</div>
+      </div>
+      <div class="card-meta">
+        <div class="tags">
+          <span class="tag tg-blue">branching</span>
+          <span class="tag tg-cyan">rebase</span>
+          <span class="tag tg-green">commits</span>
+        </div>
+        <span class="card-cta" aria-hidden="true">Open →</span>
+      </div>
+    </a>
 
-        <!-- Card 2: Page 2 — replace href and content as needed -->
-        <a class="card fade-up" href="coupon-calculator.html">
-          <div class="card-top">
-            <div class="card-icon cyan">◈</div>
-            <span class="card-arrow">↗</span>
-          </div>
-          <div>
-            <div class="card-title">Coupon Calculator</div>
-            <div class="card-desc">
-              Short description of what this guide covers. Update this when you
-              add the page.
-            </div>
-          </div>
-          <div class="card-footer">
-            <span class="tag tag-cyan">topic</span>
-            <span class="tag tag-amber">subtopic</span>
-          </div>
-        </a>
+    <!-- Card 2: Replace with your page -->
+    <a class="card" href="page2.html" aria-label="Open Page 2">
+      <div class="card-accent a-cyan" aria-hidden="true"></div>
+      <div class="card-head">
+        <div class="card-icon ic-cyan" aria-hidden="true">◈</div>
+        <span class="card-arrow" aria-hidden="true">↗</span>
+      </div>
+      <div>
+        <div class="card-title">Page 2 Title</div>
+        <div class="card-desc">Replace this with a short description of the second guide. Keep it to 1–2 lines for readability.</div>
+      </div>
+      <div class="card-meta">
+        <div class="tags">
+          <span class="tag tg-cyan">topic</span>
+          <span class="tag tg-violet">subtopic</span>
+        </div>
+        <span class="card-cta" aria-hidden="true">Open →</span>
+      </div>
+    </a>
 
-        <!-- Coming soon placeholder -->
-        <div class="card coming-soon fade-up">
-          <div class="card-top">
-            <div class="card-icon green">⊞</div>
-            <span class="coming-badge">soon</span>
-          </div>
-          <div>
-            <div class="card-title">More guides</div>
-            <div class="card-desc">
-              Additional documentation will appear here as it's added.
-            </div>
-          </div>
-          <div class="card-footer">
-            <span class="tag tag-green">coming soon</span>
-          </div>
+    <!-- Coming soon -->
+    <div class="card disabled" aria-disabled="true" aria-label="More guides coming soon">
+      <div class="card-accent a-gray" aria-hidden="true"></div>
+      <div class="card-head">
+        <div class="card-icon ic-gray" aria-hidden="true">⊞</div>
+        <span class="tag tg-gray" style="margin-top:2px">soon</span>
+      </div>
+      <div>
+        <div class="card-title">More guides</div>
+        <div class="card-desc">Additional documentation will appear here as it gets written and added to the repo.</div>
+      </div>
+      <div class="card-meta">
+        <div class="tags">
+          <span class="tag tg-gray">coming soon</span>
         </div>
       </div>
     </div>
 
-    <footer>
-      Dev Docs · Internal Use Only · Update cards in index.html when adding new
-      pages
-    </footer>
-  </body>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">
+    <div class="footer-logo" aria-hidden="true">RT</div>
+    <span class="footer-text">ReadyTeam Dev Docs · Internal Use Only · v1.0</span>
+  </div>
+  <a class="footer-link" href="https://github.com">Update on GitHub →</a>
+</footer>
+
+</body>
 </html>
