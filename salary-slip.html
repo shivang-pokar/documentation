@@ -320,6 +320,7 @@ body{
         <option value="0">Shivang Pokar — EMP-001</option>
         <option value="1">Shivam Sikotra — EMP-002</option>
         <option value="2">Harshit Kachhadiya — EMP-003</option>
+        <option value="3">Vishv Patel — EMP-004</option>
       </select>
     </div>
     <div class="form-row">
@@ -392,6 +393,18 @@ body{
 <script>
 const MO = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
+function getDaysInMonth(yearMonthStr){
+  if(!yearMonthStr) return 30;
+  const [yr,mo] = yearMonthStr.split('-').map(Number);
+  return new Date(yr, mo, 0).getDate();
+}
+
+function updateWorkingDays(){
+  const pv  = document.getElementById('period').value;
+  const days = getDaysInMonth(pv);
+  document.getElementById('wdays').value = days;
+}
+
 function fmtINR(n){
   return '₹' + parseFloat(n||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
@@ -440,6 +453,7 @@ const EMPLOYEES = [
   {name:'Shivang Pokar',  id:'EMP-001', base:150000},
   {name:'Shivam Sikotra', id:'EMP-002', base:54167},
   {name:'Harshit Kachhadiya', id:'EMP-003', base:20000},
+  {name:'Vishv Patel',        id:'EMP-004', base:40000},
 ];
 
 function fillEmployee(){
@@ -672,8 +686,15 @@ function dlPDF(){
 }
 
 // auto-wire live update
-document.querySelectorAll('input').forEach(el=>el.addEventListener('input',generate));
+document.querySelectorAll('input').forEach(el=>{
+  if(el.id==='period') return; // handled separately with updateWorkingDays
+  el.addEventListener('input',generate);
+});
 document.getElementById('empSelect').addEventListener('change',generate);
+document.getElementById('period').addEventListener('change',()=>{updateWorkingDays();generate();});
+
+// init: set working days for the default period, then render
+updateWorkingDays();
 generate();
 </script>
 </body>
