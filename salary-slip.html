@@ -516,7 +516,6 @@ function generate(){
 
   <div class="slip-foot">
     <span>Pay Period: ${month}</span>
-    <span>Generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</span>
   </div>
   `;
 }
@@ -674,8 +673,8 @@ function dlPDF(){
   doc.setFontSize(8.5);
   doc.setTextColor(150,150,150);
   doc.text(`Pay Period: ${month}`, 40, footY);
-  const genTxt = `Generated on ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}`;
-  doc.text(genTxt, W-40-doc.getTextWidth(genTxt), footY);
+  /* const genTxt = `Generated on ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}`;
+  doc.text(genTxt, W-40-doc.getTextWidth(genTxt), footY); */
 
   // thin top rule for footer
   doc.setDrawColor(...BDR);
